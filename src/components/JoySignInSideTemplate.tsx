@@ -229,7 +229,7 @@ export default function JoySignInSideTemplate() {
                       alignItems: "center",
                     }}
                   >
-                    <Checkbox size="sm" label="Meni eslang" name="persistent" />
+                    <Checkbox size="sm" label="Ma'lumotlarni eslab qolish" name="persistent" />
                     {/* <Link
                         level="title-sm"
                         onClick={() => setIsOpenChangePassword(true)}

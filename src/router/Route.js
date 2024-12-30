@@ -1,5 +1,5 @@
 export const APP_ROUTES = {
-  URL: 'https://garage-admin.uz/api',
+  URL: 'https://a10b-84-54-120-83.ngrok-free.app',
   LOGIN: '/login',
   DASHBORAD: '/dashboard',
   CARS: '/cars',

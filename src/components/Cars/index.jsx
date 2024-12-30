@@ -1,120 +1,121 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { APP_ROUTES } from "../../router/Route.js";
-import { CookiesProvider, useCookies } from "react-cookie";
-import { Link, useNavigate } from "react-router-dom";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { APP_ROUTES } from '../../router/Route.js'
+import { CookiesProvider, useCookies } from 'react-cookie'
+import { Link, useNavigate } from 'react-router-dom'
+import useMediaQuery from '@mui/material/useMediaQuery'
+import { useTheme } from '@mui/material/styles'
 // components
-import Header from "../Header";
+import Header from '../Header'
 //icons
-import PersonIcon from "@mui/icons-material/Person";
-import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import PriceChangeIcon from "@mui/icons-material/PriceChange";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import EventNoteIcon from "@mui/icons-material/EventNote";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import BadgeIcon from "@mui/icons-material/Badge";
-import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import Skeleton from "@mui/material/Skeleton";
-import "./index.sass";
-import { Dialog } from "@mui/material";
-import axios from "axios";
+import PersonIcon from '@mui/icons-material/Person'
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
+import PriceChangeIcon from '@mui/icons-material/PriceChange'
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import EventNoteIcon from '@mui/icons-material/EventNote'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import BadgeIcon from '@mui/icons-material/Badge'
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined'
+import CreditCardIcon from '@mui/icons-material/CreditCard'
+import Skeleton from '@mui/material/Skeleton'
+import './index.sass'
+import { Dialog } from '@mui/material'
+import axios from 'axios'
 
 const OWNER = {
-  ADMIN: "Шохрух",
-  INVESTOR: "Инвестор",
-  PARTNER: "Партнер",
-};
+  ADMIN: 'Шохрух',
+  INVESTOR: 'Инвестор',
+  PARTNER: 'Партнер',
+}
 
 const Cars = () => {
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
+  const theme = useTheme()
+  const navigate = useNavigate()
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
 
-  const role = localStorage.getItem("@role");
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
+  const role = localStorage.getItem('@role')
+  const currentYear = new Date().getFullYear()
+  const currentMonth = new Date().getMonth() + 1
 
-  const [open, setOpen] = useState(false);
-  const [isChangeCarModalOpen, setIsChangeCarModalOpen] = useState(false);
-  const [rentalsDeshboard, setRentalsDashboard] = useState([]);
-  const [sumDashboard, setSumDashboard] = useState([]);
-  const [rent, setRent] = useState([]);
-  const [changeCarObj, setChangeCarObj] = useState([]);
-  const [cars, setCars] = useState([]);
+  const [open, setOpen] = useState(false)
+  const [isChangeCarModalOpen, setIsChangeCarModalOpen] = useState(false)
+  const [rentalsDeshboard, setRentalsDashboard] = useState([])
+  const [sumDashboard, setSumDashboard] = useState([])
+  const [rent, setRent] = useState([])
+  const [changeCarObj, setChangeCarObj] = useState([])
+  const [cars, setCars] = useState([])
 
   const fetchData = useCallback(async (url, setter) => {
     try {
       const response = await axios.get(url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
+          'ngrok-skip-browser-warning': '69420',
         },
-      });
-      setter(response.data);
+      })
+      setter(response.data)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  }, []);
+  }, [])
 
   const refreshData = useCallback(() => {
     fetchData(
       `${APP_ROUTES.URL}/monitoring/rents/${currentYear}/${currentMonth}`,
       setRentalsDashboard
-    );
+    )
     fetchData(
       `${APP_ROUTES.URL}/monitoring/sum/${currentYear}/${currentMonth}`,
       setSumDashboard
-    );
-    fetchData(`${APP_ROUTES.URL}/car`, setCars);
-  }, [fetchData, currentYear, currentMonth]);
+    )
+    fetchData(`${APP_ROUTES.URL}/car`, setCars)
+  }, [fetchData, currentYear, currentMonth])
 
   const createCar = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const formElements = e.currentTarget.elements;
+    const formElements = e.currentTarget.elements
     const data = {
       owner: formElements.owner.value,
       model: formElements.model.value,
       carNumber: formElements.carNumber.value,
       run: formElements.run.value,
-    };
+    }
 
     try {
       const response = await axios.post(`${APP_ROUTES.URL}/car`, data, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
         },
-      });
-      refreshData();
-      setOpen(false);
+      })
+      refreshData()
+      setOpen(false)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   const getCarById = async (id) => {
     try {
       const response = await axios.get(`${APP_ROUTES.URL}/car/findOne/${id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
         },
-      });
-      setChangeCarObj(response.data);
+      })
+      setChangeCarObj(response.data)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   const changeCarShowInfo = async (id) => {
-    getCarById(id);
-    setIsChangeCarModalOpen(true);
-  };
+    getCarById(id)
+    setIsChangeCarModalOpen(true)
+  }
 
   const changeRent = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
     try {
       const response = await axios.patch(
@@ -122,36 +123,39 @@ const Cars = () => {
         changeCarObj,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("@token")}`,
+            Authorization: `Bearer ${localStorage.getItem('@token')}`,
           },
         }
-      );
-      refreshData();
-      setIsChangeCarModalOpen(false);
+      )
+      refreshData()
+      setIsChangeCarModalOpen(false)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   const deleteCar = async (id) => {
     try {
-      const response = await axios.delete(`${APP_ROUTES.URL}/car/findOne/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
-        },
-      });
-      refreshData();
+      const response = await axios.delete(
+        `${APP_ROUTES.URL}/car/findOne/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('@token')}`,
+          },
+        }
+      )
+      refreshData()
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    refreshData()
+  }, [refreshData])
 
-  const handleClose = () => setOpen(false);
-  const handleCloseChangeCarModal = () => setIsChangeCarModalOpen(false);
+  const handleClose = () => setOpen(false)
+  const handleCloseChangeCarModal = () => setIsChangeCarModalOpen(false)
 
   const renderTableRows = () => {
     return cars.map((item, index) => {
@@ -181,63 +185,63 @@ const Cars = () => {
             </button>
           </div>
         </div>
-      );
-    });
-  };
+      )
+    })
+  }
 
   const renderGeneralInfo = () => {
     return rentalsDeshboard || sumDashboard ? (
       <>
         <div className="infoCol">
           <h3 className="orange">Кол. арендаторов за месяц</h3>
-          <p>{rentalsDeshboard || "Данных нет"}</p>
+          <p>{rentalsDeshboard || 'Данных нет'}</p>
         </div>
         <div className="infoCol">
           <h3 className="green">Месячный доход</h3>
           <p>
             {sumDashboard.income
-              ? sumDashboard.income.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.income.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="red">Месячный расход</h3>
           <p>
             {sumDashboard.outcome
-              ? sumDashboard.outcome.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.outcome.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="blue">Месячная касса</h3>
           <p>
             {sumDashboard.total
-              ? sumDashboard.total.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.total.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="red">Залог наличными</h3>
           <p>
             {sumDashboard.cash_pledge
-              ? sumDashboard.cash_pledge.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.cash_pledge.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="orange">Залог по карте</h3>
           <p>
             {sumDashboard.card_pledge
-              ? sumDashboard.card_pledge.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.card_pledge.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="orange">Общий долг</h3>
           <p>
             {sumDashboard.duty
-              ? sumDashboard.duty.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.duty.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
       </>
@@ -250,13 +254,13 @@ const Cars = () => {
           <Skeleton variant="text" width={200} height={50} />
         </div>
       </>
-    );
-  };
+    )
+  }
 
   return (
     <>
       <Dialog
-        maxWidth={"md"}
+        maxWidth={'md'}
         open={open}
         onClose={handleClose}
         fullScreen={fullScreen}
@@ -303,7 +307,7 @@ const Cars = () => {
         </div>
       </Dialog>
       <Dialog
-        maxWidth={"md"}
+        maxWidth={'md'}
         open={isChangeCarModalOpen}
         onClose={handleCloseChangeCarModal}
         fullScreen={fullScreen}
@@ -380,12 +384,12 @@ const Cars = () => {
         </div>
       </Dialog>
       <Header />
-      {role === "admin" ? (
+      {role === 'admin' ? (
         <section className="general">
           <div className="container">
             <div className="generalHeading">
               <h2>Общие показатели</h2>
-              <button onClick={() => navigate("/dashboard")}>Все заказы</button>
+              <button onClick={() => navigate('/dashboard')}>Все заказы</button>
             </div>
             <div className="generalInfo">{renderGeneralInfo()}</div>
           </div>
@@ -395,7 +399,7 @@ const Cars = () => {
           <div className="container">
             <div className="generalHeading" style={{ marginBottom: 0 }}>
               <h2>Заказы</h2>
-              <button onClick={() => navigate("/dashboard")}>Все заказы</button>
+              <button onClick={() => navigate('/dashboard')}>Все заказы</button>
             </div>
           </div>
         </section>
@@ -433,7 +437,7 @@ const Cars = () => {
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Cars;
+export default Cars

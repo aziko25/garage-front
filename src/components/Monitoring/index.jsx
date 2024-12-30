@@ -1,148 +1,139 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { APP_ROUTES } from "../../router/Route.js";
-import { CookiesProvider, useCookies } from "react-cookie";
-import { Link, useNavigate } from "react-router-dom";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
+import React, { useState, useEffect, useCallback } from 'react'
+import { APP_ROUTES } from '../../router/Route.js'
+import { useCookies } from 'react-cookie'
+import { useNavigate } from 'react-router-dom'
+import useMediaQuery from '@mui/material/useMediaQuery'
+import { useTheme } from '@mui/material/styles'
 //components
-import Header from "../Header";
-import "./index.sass";
+import Header from '../Header'
+import './index.sass'
 
 // icons
-import PersonIcon from "@mui/icons-material/Person";
-import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import PriceChangeIcon from "@mui/icons-material/PriceChange";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import EventNoteIcon from "@mui/icons-material/EventNote";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import BadgeIcon from "@mui/icons-material/Badge";
-import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import Skeleton from "@mui/material/Skeleton";
-import "./index.sass";
-import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
-import axios from "axios";
+import PersonIcon from '@mui/icons-material/Person'
+import Skeleton from '@mui/material/Skeleton'
+import './index.sass'
+import { Dialog, Pagination } from '@mui/material'
+import axios from 'axios'
 
 const INCOME_TYPES = {
-  income: "Поступление",
-  outcome: "Расход",
-  rent: "Аренда",
-};
+  income: 'Поступление',
+  outcome: 'Расход',
+  rent: 'Аренда',
+}
 
 const OWNER = {
-  ADMIN: "Шохрух",
-  INVESTOR: "Инвестор",
-  PARTNER: "Партнер",
-};
+  ADMIN: 'Шохрух',
+  INVESTOR: 'Инвестор',
+  PARTNER: 'Партнер',
+}
 
 const Monitoring = (props) => {
-  const [cookies, setCookie] = useCookies(["access_token"]);
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
-  const [open, setOpen] = useState(false);
-  const [openCreateOutcome, setOpenCreateOutcome] = useState(false);
-  const [rents, setRents] = useState([]);
-  const [sum, setSum] = useState([]);
-  const [ownersIncome, setOwnersIncome] = useState([]);
-  const [history, setHistory] = useState([]);
+  const theme = useTheme()
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
+  const [open, setOpen] = useState(false)
+  const [openCreateOutcome, setOpenCreateOutcome] = useState(false)
+  const [rents, setRents] = useState([])
+  const [sum, setSum] = useState([])
+  const [ownersIncome, setOwnersIncome] = useState([])
+  const [history, setHistory] = useState([])
 
-  const role = localStorage.getItem("@role");
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
+  const [page, setPage] = React.useState(1)
+  const handleChange = (event, value) => {
+    setPage(value)
+  }
+
+  const role = localStorage.getItem('@role')
+  const currentYear = new Date().getFullYear()
+  const currentMonth = new Date().getMonth() + 1
 
   const fetchData = useCallback(async (url, setter) => {
     try {
       const response = await axios.get(url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
+          'ngrok-skip-browser-warning': '69420',
         },
-      });
-      setter(response.data);
+      })
+      setter(response.data)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  }, []);
+  }, [])
 
   const createIncome = useCallback(async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     const data = {
       owner: e.target.owner.value,
       comment: e.target.comment.value,
       amount: +e.target.amount.value,
       createdAt: new Date(new Date().getTime() + 5 * 60 * 60 * 1000),
-    };
+    }
 
     try {
       const response = await axios.post(`${APP_ROUTES.URL}/income`, data, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
         },
-      });
-      refreshStates();
-      handleClose();
+      })
+      refreshStates()
+      handleClose()
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  }, []);
+  }, [])
 
   const createOutcome = useCallback(async (e) => {
-    e.preventDefault();
+    e.preventDefault()
     const data = {
       owner: e.target.owner.value,
       comment: e.target.comment.value,
       amount: +e.target.amount.value,
       createdAt: new Date(new Date().getTime() + 5 * 60 * 60 * 1000),
-    };
+    }
 
     try {
       const response = await axios.post(`${APP_ROUTES.URL}/outcome`, data, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
         },
-      });
-      refreshStates();
-      handleCloseCreateOutcome();
+      })
+      refreshStates()
+      handleCloseCreateOutcome()
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  }, []);
+  }, [])
 
   const refreshStates = useCallback(() => {
     fetchData(
-      `${APP_ROUTES.URL}/monitoring/rents/${currentYear}/${currentMonth}`,
+      `${APP_ROUTES.URL}/monitoring/rents?page=` + page + `&limit=30`,
       setRents
-    );
+    )
     fetchData(
-      `${APP_ROUTES.URL}/monitoring/sum/${currentYear}/${currentMonth}`,
+      `${APP_ROUTES.URL}/monitoring/sum?page=` + page + `&limit=30`,
       setSum
-    );
-    fetchData(`${APP_ROUTES.URL}/monitoring/ownersIncome`, setOwnersIncome);
+    )
     fetchData(
-      `${APP_ROUTES.URL}/monitoring/history/${currentYear}/${currentMonth}`,
+      `${APP_ROUTES.URL}/monitoring/history?page=` + page + `&limit=30`,
       setHistory
-    );
-  }, [currentMonth, currentYear, fetchData]);
+    )
+    fetchData(
+      `${APP_ROUTES.URL}/monitoring/ownersIncome?page=` + page + '&limit=30',
+      setOwnersIncome
+    )
+  }, [page, fetchData])
 
   const handleClose = () => {
-    setOpen(false);
-  };
+    setOpen(false)
+  }
 
   const handleCloseCreateOutcome = () => {
-    setOpenCreateOutcome(false);
-  };
+    setOpenCreateOutcome(false)
+  }
 
   useEffect(() => {
-    refreshStates();
-  }, [refreshStates]);
+    refreshStates()
+  }, [refreshStates])
 
   const DayStatsInfo = ({ item }) => (
     <div className="dayStatsInfo">
@@ -150,47 +141,47 @@ const Monitoring = (props) => {
         <h3>{INCOME_TYPES[item.type]}</h3>
         <p>
           {item.comment ||
-            (item?.Car && item?.Car?.model + " " + item?.Car?.carNumber) ||
-            "Нет данных"}
+            (item?.Car && item?.Car?.model + ' ' + item?.Car?.carNumber) ||
+            'Нет данных'}
         </p>
       </div>
       <div className="dayStatsPrice">
         <h3>
-          {item.type === "outcome" ? "-" : "+"}
-          {item.amount.toLocaleString("de-DE") + " uzs"}
+          {item.type === 'outcome' ? '-' : '+'}
+          {item.amount.toLocaleString('de-DE') + ' uzs'}
         </h3>
         <p>
-          {new Date(item.createdAt).toLocaleTimeString("ru-RU", {
-            hour: "numeric",
-            minute: "numeric",
-            timeZone: "UTC",
+          {new Date(item.createdAt).toLocaleTimeString('ru-RU', {
+            hour: 'numeric',
+            minute: 'numeric',
+            timeZone: 'UTC',
           })}
         </p>
       </div>
     </div>
-  );
+  )
 
   const DayStats = ({ item }) => (
     <>
       <div className="dayStats">
         <p>
-          {new Date(item.date).toLocaleDateString("ru-RU", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
+          {new Date(item.date).toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
           })}
         </p>
         <p>
-          {(item.income - item.outcome + item.rent > 0 ? "+" : "") +
-            (item.income - item.outcome + item.rent).toLocaleString("de-DE") +
-            " uzs"}
+          {(item.income - item.outcome + item.rent > 0 ? '+' : '') +
+            (item.income - item.outcome + item.rent).toLocaleString('de-DE') +
+            ' uzs'}
         </p>
       </div>
       {item.detailed.map((detailedItem, index) => (
         <DayStatsInfo key={index} item={detailedItem} />
       ))}
     </>
-  );
+  )
 
   const PartnerItem = ({ title, income, history, type }) => (
     <div className="partnerItem">
@@ -199,22 +190,22 @@ const Monitoring = (props) => {
           <h3>{title}</h3>
           <PersonIcon />
         </div>
-        {role === "admin" && (
+        {role === 'admin' && (
           <div className="partnerBalance">
             <h3>Баланс:</h3>
-            <p>{income?.toLocaleString("de-DE") + " uzs"}</p>
+            <p>{income?.toLocaleString('de-DE') + ' uzs'}</p>
           </div>
         )}
       </div>
       <div className="partnerItemBody">
         <div className="stats">
-          {role === "admin" && (
+          {role === 'admin' && (
             <div className="income">
               <h3>Поступление:</h3>
               <p>
                 +
-                {history?.total?.[type]?.income?.toLocaleString("de-DE") +
-                  " uzs" || "Данных нет"}
+                {history?.total?.[type]?.income?.toLocaleString('de-DE') +
+                  ' uzs' || 'Данных нет'}
               </p>
             </div>
           )}
@@ -222,8 +213,8 @@ const Monitoring = (props) => {
             <h3>Расход:</h3>
             <p>
               -
-              {history?.total?.[type]?.outcome?.toLocaleString("de-DE") +
-                " uzs" || "Данных нет"}
+              {history?.total?.[type]?.outcome?.toLocaleString('de-DE') +
+                ' uzs' || 'Данных нет'}
             </p>
           </div>
         </div>
@@ -232,12 +223,12 @@ const Monitoring = (props) => {
         ))}
       </div>
     </div>
-  );
+  )
 
   return (
     <>
       <Dialog
-        maxWidth={"md"}
+        maxWidth={'md'}
         open={open}
         onClose={() => handleClose(false)}
         fullScreen={fullScreen}
@@ -293,7 +284,7 @@ const Monitoring = (props) => {
         </div>
       </Dialog>
       <Dialog
-        maxWidth={"md"}
+        maxWidth={'md'}
         open={openCreateOutcome}
         onClose={() => handleCloseCreateOutcome(false)}
         fullScreen={fullScreen}
@@ -352,7 +343,7 @@ const Monitoring = (props) => {
         </div>
       </Dialog>
       <Header />
-      {role === "admin" && (
+      {role === 'admin' && (
         <section className="general">
           <div className="container">
             <div className="generalHeading">
@@ -364,56 +355,53 @@ const Monitoring = (props) => {
                   <div className="infoCol">
                     <h3 className="blue">Заработано за месяц на аренде</h3>
                     <p>
-                      {sum?.rentIncome?.toLocaleString("de-DE") + " uzs" ||
-                        "Данных нет"}
+                      {sum?.rentIncome?.toLocaleString('de-DE') + ' uzs' ||
+                        'Данных нет'}
                     </p>
                   </div>
                   <div className="infoCol">
                     <h3 className="green">Другие доходы</h3>
                     <p>
-                      {sum?.income?.toLocaleString("de-DE") + " uzs" ||
-                        "Данных нет"}
+                      {sum?.income?.toLocaleString('de-DE') + ' uzs' ||
+                        'Данных нет'}
                     </p>
                   </div>
                   <div className="infoCol">
                     <h3 className="red">Потрачено за месяц</h3>
                     <p>
-                      {sum?.outcome?.toLocaleString("de-DE") + " uzs" ||
-                        "Данных нет"}
+                      {sum?.outcome?.toLocaleString('de-DE') + ' uzs' ||
+                        'Данных нет'}
                     </p>
                   </div>
                   <div className="infoCol">
                     <h3 className="blue">Заработано за месяц</h3>
                     <p>
-                      {sum?.total?.toLocaleString("de-DE") + " uzs" ||
-                        "Данных нет"}
+                      {sum?.total?.toLocaleString('de-DE') + ' uzs' ||
+                        'Данных нет'}
                     </p>
                   </div>
                   <div className="infoCol">
                     <h3 className="red">Залог наличными</h3>
                     <p>
                       {sum.cash_pledge
-                        ? sum.cash_pledge.toLocaleString("de-DE") +
-                          " uzs"
-                        : "Данных нет"}
+                        ? sum.cash_pledge.toLocaleString('de-DE') + ' uzs'
+                        : 'Данных нет'}
                     </p>
                   </div>
                   <div className="infoCol">
                     <h3 className="red">Залог по карте</h3>
                     <p>
                       {sum.card_pledge
-                        ? sum.card_pledge.toLocaleString("de-DE") +
-                          " uzs"
-                        : "Данных нет"}
+                        ? sum.card_pledge.toLocaleString('de-DE') + ' uzs'
+                        : 'Данных нет'}
                     </p>
                   </div>
                   <div className="infoCol">
                     <h3 className="red">Общий долг</h3>
                     <p>
                       {sum.duty
-                        ? sum.duty.toLocaleString("de-DE") +
-                          " uzs"
-                        : "Данных нет"}
+                        ? sum.duty.toLocaleString('de-DE') + ' uzs'
+                        : 'Данных нет'}
                     </p>
                   </div>
                 </>
@@ -439,10 +427,10 @@ const Monitoring = (props) => {
           <div className="monitoringHeading">
             <h2>Мониторинг</h2>
             <div className="partnerActions">
-              {role === "admin" && (
+              {role === 'admin' && (
                 <button
                   onClick={() => {
-                    setOpen(true);
+                    setOpen(true)
                   }}
                 >
                   Добавить Доход
@@ -450,9 +438,9 @@ const Monitoring = (props) => {
               )}
               <button
                 onClick={() => {
-                  setOpenCreateOutcome(true);
+                  setOpenCreateOutcome(true)
                 }}
-                style={{ backgroundColor: "#e13333" }}
+                style={{ backgroundColor: '#e13333' }}
               >
                 Добавить Расход
               </button>
@@ -478,10 +466,19 @@ const Monitoring = (props) => {
               type="investor"
             />
           </div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginTop: '1rem',
+            }}
+          >
+            <Pagination count={10} page={page} onChange={handleChange} />
+          </div>
         </div>
       </section>
     </>
-  );
-};
+  )
+}
 
-export default Monitoring;
+export default Monitoring

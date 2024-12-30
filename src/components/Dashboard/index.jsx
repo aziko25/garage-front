@@ -1,112 +1,113 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
-import { APP_ROUTES } from "../../router/Route.js";
-import { CookiesProvider, useCookies } from "react-cookie";
-import { Link, useNavigate } from "react-router-dom";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { TimePicker } from "@mui/x-date-pickers/TimePicker";
-import { renderTimeViewClock } from "@mui/x-date-pickers/timeViewRenderers";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
-import "dayjs/locale/ru";
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { APP_ROUTES } from '../../router/Route.js'
+import { CookiesProvider, useCookies } from 'react-cookie'
+import { Link, useNavigate } from 'react-router-dom'
+import useMediaQuery from '@mui/material/useMediaQuery'
+import { useTheme } from '@mui/material/styles'
+import { DatePicker } from '@mui/x-date-pickers/DatePicker'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider'
+import { TimePicker } from '@mui/x-date-pickers/TimePicker'
+import { renderTimeViewClock } from '@mui/x-date-pickers/timeViewRenderers'
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc'
+import timezone from 'dayjs/plugin/timezone'
+import 'dayjs/locale/ru'
 // components
-import Header from "../Header";
+import Header from '../Header'
 //icons
-import PersonIcon from "@mui/icons-material/Person";
-import DirectionsCarIcon from "@mui/icons-material/DirectionsCar";
-import PriceChangeIcon from "@mui/icons-material/PriceChange";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
-import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
-import EventNoteIcon from "@mui/icons-material/EventNote";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import BadgeIcon from "@mui/icons-material/Badge";
-import AssessmentOutlinedIcon from "@mui/icons-material/AssessmentOutlined";
-import CreditCardIcon from "@mui/icons-material/CreditCard";
-import Skeleton from "@mui/material/Skeleton";
-import "./index.sass";
+import PersonIcon from '@mui/icons-material/Person'
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
+import PriceChangeIcon from '@mui/icons-material/PriceChange'
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth'
+import EventNoteIcon from '@mui/icons-material/EventNote'
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+import BadgeIcon from '@mui/icons-material/Badge'
+import AssessmentOutlinedIcon from '@mui/icons-material/AssessmentOutlined'
+import CreditCardIcon from '@mui/icons-material/CreditCard'
+import Skeleton from '@mui/material/Skeleton'
+import './index.sass'
 import {
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-} from "@mui/material";
-import axios from "axios";
+} from '@mui/material'
+import axios from 'axios'
 
 const STATUS = {
-  PLEDGE: "Дал залог",
-  PAID: "Оплачено",
-  DUTY: "Долг",
-};
+  PLEDGE: 'Дал залог',
+  PAID: 'Оплачено',
+  DUTY: 'Долг',
+}
 
 const PAYMENT_TYPE = {
-  CASH: "Наличные",
-  CARD: "Карта",
-};
+  CASH: 'Наличные',
+  CARD: 'Карта',
+}
 
 const Dashboard = () => {
-  dayjs.locale("ru");
-  dayjs.extend(utc);
-  dayjs.extend(timezone);
-  const theme = useTheme();
-  const navigate = useNavigate();
-  const fullScreen = useMediaQuery(theme.breakpoints.down("md"));
+  dayjs.locale('ru')
+  dayjs.extend(utc)
+  dayjs.extend(timezone)
+  const theme = useTheme()
+  const navigate = useNavigate()
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'))
 
-  const role = localStorage.getItem("@role");
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
+  const role = localStorage.getItem('@role')
+  const currentYear = new Date().getFullYear()
+  const currentMonth = new Date().getMonth() + 1
 
-  const [open, setOpen] = useState(false);
-  const [isChangeRentModalOpen, setIsChangeRentModalOpen] = useState(false);
-  const [rentalsDeshboard, setRentalsDashboard] = useState([]);
-  const [sumDashboard, setSumDashboard] = useState([]);
-  const [rent, setRent] = useState([]);
-  const [changeRentObj, setChangeRentObj] = useState([]);
-  const [cars, setCars] = useState([]);
-  const [activeCars, setActiveCars] = useState([]);
+  const [open, setOpen] = useState(false)
+  const [isChangeRentModalOpen, setIsChangeRentModalOpen] = useState(false)
+  const [rentalsDeshboard, setRentalsDashboard] = useState([])
+  const [sumDashboard, setSumDashboard] = useState([])
+  const [rent, setRent] = useState([])
+  const [changeRentObj, setChangeRentObj] = useState([])
+  const [cars, setCars] = useState([])
+  const [activeCars, setActiveCars] = useState([])
 
   const daysBetween = (date1, date2) => {
-    const ONE_DAY = 1000 * 60 * 60 * 24;
-    const differenceMs = Math.abs(date1.getTime() - date2.getTime());
-    return Math.round(differenceMs / ONE_DAY);
-  };
+    const ONE_DAY = 1000 * 60 * 60 * 24
+    const differenceMs = Math.abs(date1.getTime() - date2.getTime())
+    return Math.round(differenceMs / ONE_DAY)
+  }
 
   const fetchData = useCallback(async (url, setter) => {
     try {
       const response = await axios.get(url, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
+          'ngrok-skip-browser-warning': '69420',
         },
-      });
-      setter(response.data);
+      })
+      setter(response.data)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  }, []);
+  }, [])
 
   const refreshData = useCallback(() => {
     fetchData(
       `${APP_ROUTES.URL}/monitoring/rents/${currentYear}/${currentMonth}`,
       setRentalsDashboard
-    );
+    )
     fetchData(
       `${APP_ROUTES.URL}/monitoring/sum/${currentYear}/${currentMonth}`,
       setSumDashboard
-    );
-    fetchData(`${APP_ROUTES.URL}/rent`, setRent);
-    fetchData(`${APP_ROUTES.URL}/car`, setCars);
-    fetchData(`${APP_ROUTES.URL}/car/free`, setActiveCars);
-  }, [fetchData, currentYear, currentMonth]);
+    )
+    fetchData(`${APP_ROUTES.URL}/rent`, setRent)
+    fetchData(`${APP_ROUTES.URL}/car`, setCars)
+    fetchData(`${APP_ROUTES.URL}/car/free`, setActiveCars)
+  }, [fetchData, currentYear, currentMonth])
 
   const createRent = async (e) => {
-    e.preventDefault();
-    const formElements = e.currentTarget.elements;
+    e.preventDefault()
+    const formElements = e.currentTarget.elements
 
     const data = {
       status: formElements.status.value,
@@ -124,7 +125,7 @@ const Dashboard = () => {
       guaranteeType: formElements.guaranteeType.value,
       amount: +formElements.amount.value,
       carId: +formElements.carId.value,
-    };
+    }
 
     if (
       data.incomePersentage[0] +
@@ -132,48 +133,49 @@ const Dashboard = () => {
         data.incomePersentage[2] !==
       100
     ) {
-      alert("Сумма процентов должна быть равна 100%");
-      return;
+      alert('Сумма процентов должна быть равна 100%')
+      return
     }
 
     try {
       const response = await axios.post(`${APP_ROUTES.URL}/rent`, data, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
         },
-      });
-      refreshData();
-      setOpen(false);
+      })
+      refreshData()
+      setOpen(false)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   const getRentById = async (id) => {
     try {
       const response = await axios.get(`${APP_ROUTES.URL}/rent/byId/${id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
+          'ngrok-skip-browser-warning': '69420',
         },
-      });
-      setChangeRentObj(response.data);
+      })
+      setChangeRentObj(response.data)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   const changeRentShowInfo = async (id) => {
-    setIsChangeRentModalOpen(true);
-    getRentById(id);
-  };
+    setIsChangeRentModalOpen(true)
+    getRentById(id)
+  }
 
   const changeRent = async (e) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    const updatedRentObj = { ...changeRentObj };
-    delete updatedRentObj.adminIncome;
-    delete updatedRentObj.investorIncome;
-    delete updatedRentObj.partnerIncome;
+    const updatedRentObj = { ...changeRentObj }
+    delete updatedRentObj.adminIncome
+    delete updatedRentObj.investorIncome
+    delete updatedRentObj.partnerIncome
 
     if (
       updatedRentObj.incomePersentage[0] +
@@ -181,8 +183,8 @@ const Dashboard = () => {
         updatedRentObj.incomePersentage[2] !==
       100
     ) {
-      alert("Сумма процентов должна быть равна 100%");
-      return;
+      alert('Сумма процентов должна быть равна 100%')
+      return
     }
 
     try {
@@ -191,42 +193,42 @@ const Dashboard = () => {
         updatedRentObj,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("@token")}`,
+            Authorization: `Bearer ${localStorage.getItem('@token')}`,
           },
         }
-      );
-      refreshData();
-      setIsChangeRentModalOpen(false);
+      )
+      refreshData()
+      setIsChangeRentModalOpen(false)
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   const deleteRent = async (id) => {
     try {
       const response = await axios.delete(`${APP_ROUTES.URL}/rent/byId/${id}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          Authorization: `Bearer ${localStorage.getItem('@token')}`,
         },
-      });
-      refreshData();
+      })
+      refreshData()
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   useEffect(() => {
-    refreshData();
-  }, [refreshData]);
+    refreshData()
+  }, [refreshData])
 
-  const handleClose = () => setOpen(false);
-  const handleCloseChangeRentModal = () => setIsChangeRentModalOpen(false);
+  const handleClose = () => setOpen(false)
+  const handleCloseChangeRentModal = () => setIsChangeRentModalOpen(false)
 
   const renderTableRows = () => {
-    return (
-      rent &&
-      rent?.map((item, index) => {
-        const car = cars.find((car) => car.id === item?.carId) || {};
+    console.log({ rent })
+    if (rent) {
+      return rent?.map((item, index) => {
+        const car = cars?.find((car) => car.id === item?.carId) || {}
 
         return (
           <div className="tableTr" key={index}>
@@ -234,44 +236,44 @@ const Dashboard = () => {
               <p>{item?.name}</p>
             </div>
             <div className="tableTd">
-              <p>{`${car.model || ""} ${car.carNumber || ""}`}</p>
+              <p>{`${car.model || ''} ${car.carNumber || ''}`}</p>
             </div>
             <div className="tableTd">
-              <p>{item?.amount.toLocaleString("de-DE")} uzs</p>
+              <p>{item?.amount.toLocaleString('de-DE')} uzs</p>
             </div>
             <div className="tableTd">
               <p>
                 {(
                   (item?.amount / 100) *
                   item?.incomePersentage[1]
-                ).toLocaleString("de-DE")}{" "}
+                ).toLocaleString('de-DE')}{' '}
                 uzs
               </p>
             </div>
             <div className="tableTd">
-              <p>{PAYMENT_TYPE[item?.paymentType] || ""}</p>
+              <p>{PAYMENT_TYPE[item?.paymentType] || ''}</p>
             </div>
             <div className="tableTd">
               <p>
-                {new Date(item.startDate).toLocaleDateString("ru-RU", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
+                {new Date(item.startDate).toLocaleDateString('ru-RU', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
 
-                  hour: "numeric",
-                  minute: "numeric",
+                  hour: 'numeric',
+                  minute: 'numeric',
                 })}
               </p>
             </div>
             <div className="tableTd">
               <p>
-                {new Date(item.endDate).toLocaleDateString("ru-RU", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
+                {new Date(item.endDate).toLocaleDateString('ru-RU', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric',
 
-                  hour: "numeric",
-                  minute: "numeric",
+                  hour: 'numeric',
+                  minute: 'numeric',
                 })}
               </p>
             </div>
@@ -292,64 +294,68 @@ const Dashboard = () => {
               </button>
             </div>
           </div>
-        );
+        )
       })
-    );
-  };
+    }
+
+    return null
+  }
 
   const renderGeneralInfo = () => {
     return rentalsDeshboard || sumDashboard ? (
       <>
         <div className="infoCol">
           <h3 className="orange">Кол. арендаторов за месяц</h3>
-          <p>{rentalsDeshboard || "Данных нет"}</p>
+          <p>{rentalsDeshboard || 'Данных нет'}</p>
         </div>
         <div className="infoCol">
           <h3 className="green">Месячный доход</h3>
           <p>
             {sumDashboard.income
-              ? sumDashboard.rentIncome.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.rentIncome.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="red">Месячный расход</h3>
           <p>
             {sumDashboard.outcome
-              ? sumDashboard.outcome.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.outcome.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="blue">Месячная касса</h3>
           <p>
             {sumDashboard.rentIncome || sumDashboard.income
-              ? ( sumDashboard.rentIncome + sumDashboard.income).toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? (sumDashboard.rentIncome + sumDashboard.income).toLocaleString(
+                  'de-DE'
+                ) + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="red">Залог наличными</h3>
           <p>
             {sumDashboard.cash_pledge
-              ? sumDashboard.cash_pledge.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.cash_pledge.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="orange">Залог по карте</h3>
           <p>
             {sumDashboard.card_pledge
-              ? sumDashboard.card_pledge.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.card_pledge.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
         <div className="infoCol">
           <h3 className="orange">Общий долг</h3>
           <p>
             {sumDashboard.duty
-              ? sumDashboard.duty.toLocaleString("de-DE") + " uzs"
-              : "Данных нет"}
+              ? sumDashboard.duty.toLocaleString('de-DE') + ' uzs'
+              : 'Данных нет'}
           </p>
         </div>
       </>
@@ -362,13 +368,13 @@ const Dashboard = () => {
           <Skeleton variant="text" width={200} height={50} />
         </div>
       </>
-    );
-  };
+    )
+  }
 
   return (
     <>
       <Dialog
-        maxWidth={"md"}
+        maxWidth={'md'}
         open={open}
         onClose={handleClose}
         fullScreen={fullScreen}
@@ -394,7 +400,7 @@ const Dashboard = () => {
                   <option value="" hidden>
                     Выбрать машину
                   </option>
-                  {activeCars.map((car) => (
+                  {activeCars?.map((car) => (
                     <option key={car.id} value={car.id}>
                       {`${car.model} ${car.carNumber}`}
                     </option>
@@ -434,7 +440,7 @@ const Dashboard = () => {
                   <DateTimePicker
                     label="Дата и время начала аренды"
                     className="datePicker"
-                    sx={{ marginBottom: "12px" }}
+                    sx={{ marginBottom: '12px' }}
                     name="startDate"
                     ampm={false}
                     required
@@ -518,7 +524,7 @@ const Dashboard = () => {
         </div>
       </Dialog>
       <Dialog
-        maxWidth={"md"}
+        maxWidth={'md'}
         open={isChangeRentModalOpen}
         onClose={handleCloseChangeRentModal}
         fullScreen={fullScreen}
@@ -570,7 +576,7 @@ const Dashboard = () => {
                   <option value="" hidden>
                     Выбрать машину
                   </option>
-                  {cars.map((car) => (
+                  {cars?.map((car) => (
                     <option key={car.id} value={car.id}>
                       {`${car.model} ${car.carNumber}`}
                     </option>
@@ -636,7 +642,7 @@ const Dashboard = () => {
                 <label
                   htmlFor=""
                   style={{
-                    fontSize: "16px",
+                    fontSize: '16px',
                   }}
                 >
                   Время аренды "
@@ -655,7 +661,7 @@ const Dashboard = () => {
                   <DateTimePicker
                     label="Дата и время начала аренды"
                     className="datePicker"
-                    sx={{ marginBottom: "12px" }}
+                    sx={{ marginBottom: '12px' }}
                     name="startDate"
                     ampm={false}
                     timezone="Asia/Tashkent"
@@ -809,12 +815,12 @@ const Dashboard = () => {
         </div>
       </Dialog>
       <Header setRent={setRent} refreshData={refreshData} />
-      {role === "admin" ? (
+      {role === 'admin' ? (
         <section className="general">
           <div className="container">
             <div className="generalHeading">
               <h2>Общие показатели</h2>
-              <button onClick={() => navigate("/cars")}>Все автомобили</button>
+              <button onClick={() => navigate('/cars')}>Все автомобили</button>
             </div>
             <div className="generalInfo">{renderGeneralInfo()}</div>
           </div>
@@ -824,7 +830,7 @@ const Dashboard = () => {
           <div className="container">
             <div className="generalHeading" style={{ marginBottom: 0 }}>
               <h2>Автомобили</h2>
-              <button onClick={() => navigate("/cars")}>Все автомобили</button>
+              <button onClick={() => navigate('/cars')}>Все автомобили</button>
             </div>
           </div>
         </section>
@@ -878,7 +884,7 @@ const Dashboard = () => {
         </div>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default Dashboard;
+export default Dashboard
