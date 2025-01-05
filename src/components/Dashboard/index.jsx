@@ -75,6 +75,7 @@ const Dashboard = () => {
   const [changeRentObj, setChangeRentObj] = useState([]);
   const [cars, setCars] = useState([]);
   const [activeCars, setActiveCars] = useState([]);
+  const [filterRentalsDashboard, setFilterRentalsDashboard] = useState([]);
 
   const daysBetween = (date1, date2) => {
     const ONE_DAY = 1000 * 60 * 60 * 24;
@@ -96,13 +97,30 @@ const Dashboard = () => {
     }
   }, []);
 
+  const [guaranteeCard, setGuaranteeCard] = useState(false);
+  const [guaranteeCash, setGuaranteeCash] = useState(false);
+
+
   const refreshData = useCallback(() => {
+    // Build query parameters for setFilterRentalsDashboard
+    const params = [];
+    if (guaranteeCard) params.push("guaranteeCard=true");
+    if (guaranteeCash) params.push("guaranteeCash=true");
+  
+    const filterRentalsUrl = `${APP_ROUTES.URL}/rent/` + 
+      (params.length ? `?${params.join("&")}` : "");
+  
+    // Fetch data with specific parameters for setFilterRentalsDashboard
+    fetchData(filterRentalsUrl, setFilterRentalsDashboard);
+  
+    // Fetch data for other endpoints without additional parameters
     fetchData(`${APP_ROUTES.URL}/monitoring/rents/${currentYear}/${currentMonth}`, setRentalsDashboard);
     fetchData(`${APP_ROUTES.URL}/monitoring/sum/${currentYear}/${currentMonth}`, setSumDashboard);
     fetchData(`${APP_ROUTES.URL}/rent`, setRent);
     fetchData(`${APP_ROUTES.URL}/car`, setCars);
     fetchData(`${APP_ROUTES.URL}/car/free`, setActiveCars);
-  }, [fetchData, currentYear, currentMonth]);
+  }, [fetchData, currentYear, currentMonth, guaranteeCard, guaranteeCash]);
+  
 
   const createRent = async (e) => {
     e.preventDefault();
@@ -208,17 +226,19 @@ const Dashboard = () => {
 
   useEffect(() => {
     refreshData();
-  }, [refreshData]);
+  }, [guaranteeCard, guaranteeCash, refreshData]);  
 
   const handleClose = () => setOpen(false);
   const handleCloseChangeRentModal = () => setIsChangeRentModalOpen(false);
 
   const renderTableRows = () => {
+    const dataToRender = guaranteeCard || guaranteeCash ? filterRentalsDashboard : rent;
+  
     return (
-      rent &&
-      rent?.map((item, index) => {
+      dataToRender &&
+      dataToRender.map((item, index) => {
         const car = cars.find((car) => car.id === item?.carId) || {};
-
+  
         return (
           <div
             className='tableTr'
@@ -245,7 +265,6 @@ const Dashboard = () => {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
-
                   hour: "numeric",
                   minute: "numeric",
                 })}
@@ -257,7 +276,6 @@ const Dashboard = () => {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
-
                   hour: "numeric",
                   minute: "numeric",
                 })}
@@ -287,7 +305,7 @@ const Dashboard = () => {
         );
       })
     );
-  };
+  };  
 
   const renderGeneralInfo = () => {
     return rentalsDeshboard || sumDashboard ? (
@@ -312,14 +330,67 @@ const Dashboard = () => {
               : "Данных нет"}
           </p>
         </div>
-        <div className='infoCol'>
-          <h3 className='red'>Залог наличными</h3>
+
+
+        <div className="infoCol">
+          <h3 className="red">
+            Залог наличными
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                padding: "0",
+                fontSize: "1.5rem",
+                cursor: "pointer",
+                marginLeft: "10px",
+                verticalAlign: "middle",  // Ensure the button aligns with the text
+              }}
+              onClick={() => {
+                if (guaranteeCash) {
+                  setGuaranteeCash(false);
+                  setGuaranteeCard(false);
+                } else {
+                  setGuaranteeCash(true);
+                  setGuaranteeCard(false);
+                }
+              }}
+            >
+              {guaranteeCash ? '◼️' : '◽️'}
+            </button>
+          </h3>
           <p>{sumDashboard.cash_pledge ? sumDashboard.cash_pledge.toLocaleString("de-DE") + " uzs" : "Данных нет"}</p>
         </div>
-        <div className='infoCol'>
-          <h3 className='orange'>Залог по карте</h3>
+        <div className="infoCol">
+          <h3 className="orange">
+            Залог по карте
+            <button
+              style={{
+                background: "none",
+                border: "none",
+                padding: "0",
+                fontSize: "1.5rem",
+                cursor: "pointer",
+                marginLeft: "10px",
+                verticalAlign: "middle",  // Ensure the button aligns with the text
+              }}
+              onClick={() => {
+                if (guaranteeCard) {
+                  setGuaranteeCard(false);
+                  setGuaranteeCash(false);
+                } else {
+                  setGuaranteeCard(true);
+                  setGuaranteeCash(false);
+                }
+              }}
+            >
+              {guaranteeCard ? '◼️' : '◽️'}
+            </button>
+          </h3>
           <p>{sumDashboard.card_pledge ? sumDashboard.card_pledge.toLocaleString("de-DE") + " uzs" : "Данных нет"}</p>
         </div>
+
+
+
         <div className='infoCol'>
           <h3 className='orange'>Общий долг</h3>
           <p>{sumDashboard.duty ? sumDashboard.duty.toLocaleString("de-DE") + " uzs" : "Данных нет"}</p>
