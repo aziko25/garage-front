@@ -53,7 +53,7 @@ const PAYMENT_TYPE = {
 
 const GUARANTEE_TYPE = {
   CASH: "Наличные",
-  CARD: "Карта"
+  CARD: "Карта",
 };
 
 const Dashboard = () => {
@@ -101,19 +101,17 @@ const Dashboard = () => {
   const [guaranteeCard, setGuaranteeCard] = useState(false);
   const [guaranteeCash, setGuaranteeCash] = useState(false);
 
-
   const refreshData = useCallback(() => {
     // Build query parameters for setFilterRentalsDashboard
     const params = [];
     if (guaranteeCard) params.push("guaranteeCard=true");
     if (guaranteeCash) params.push("guaranteeCash=true");
-  
-    const filterRentalsUrl = `${APP_ROUTES.URL}/rent/` + 
-      (params.length ? `?${params.join("&")}` : "");
-  
+
+    const filterRentalsUrl = `${APP_ROUTES.URL}/rent/` + (params.length ? `?${params.join("&")}` : "");
+
     // Fetch data with specific parameters for setFilterRentalsDashboard
     fetchData(filterRentalsUrl, setFilterRentalsDashboard);
-  
+
     // Fetch data for other endpoints without additional parameters
     fetchData(`${APP_ROUTES.URL}/monitoring/rents/${currentYear}/${currentMonth}`, setRentalsDashboard);
     fetchData(`${APP_ROUTES.URL}/monitoring/sum/${currentYear}/${currentMonth}`, setSumDashboard);
@@ -121,7 +119,6 @@ const Dashboard = () => {
     fetchData(`${APP_ROUTES.URL}/car`, setCars);
     fetchData(`${APP_ROUTES.URL}/car/free`, setActiveCars);
   }, [fetchData, currentYear, currentMonth, guaranteeCard, guaranteeCash]);
-  
 
   const createRent = async (e) => {
     e.preventDefault();
@@ -169,7 +166,7 @@ const Dashboard = () => {
       const response = await axios.get(`${APP_ROUTES.URL}/rent/byId/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("@token")}`,
-          'ngrok-skip-browser-warning': '69420',
+          "ngrok-skip-browser-warning": "69420",
         },
       });
       setChangeRentObj(response.data);
@@ -227,19 +224,19 @@ const Dashboard = () => {
 
   useEffect(() => {
     refreshData();
-  }, [guaranteeCard, guaranteeCash, refreshData]);  
+  }, [guaranteeCard, guaranteeCash, refreshData]);
 
   const handleClose = () => setOpen(false);
   const handleCloseChangeRentModal = () => setIsChangeRentModalOpen(false);
 
   const renderTableRows = () => {
     const dataToRender = guaranteeCard || guaranteeCash ? filterRentalsDashboard : rent;
-  
+
     return (
       dataToRender &&
       dataToRender.map((item, index) => {
         const car = cars.find((car) => car.id === item?.carId) || {};
-  
+
         return (
           <div
             className='tableTr'
@@ -306,7 +303,7 @@ const Dashboard = () => {
         );
       })
     );
-  };  
+  };
 
   const renderGeneralInfo = () => {
     return rentalsDeshboard || sumDashboard ? (
@@ -332,9 +329,8 @@ const Dashboard = () => {
           </p>
         </div>
 
-
-        <div className="infoCol">
-          <h3 className="red">
+        <div className='infoCol'>
+          <h3 className='red'>
             Залог наличными
             <button
               style={{
@@ -344,7 +340,7 @@ const Dashboard = () => {
                 fontSize: "1.5rem",
                 cursor: "pointer",
                 marginLeft: "10px",
-                verticalAlign: "middle",  // Ensure the button aligns with the text
+                verticalAlign: "middle", // Ensure the button aligns with the text
               }}
               onClick={() => {
                 if (guaranteeCash) {
@@ -356,13 +352,13 @@ const Dashboard = () => {
                 }
               }}
             >
-              {guaranteeCash ? '☑️' : '◽️'}
+              {guaranteeCash ? "☑️" : "◽️"}
             </button>
           </h3>
           <p>{sumDashboard.cash_pledge ? sumDashboard.cash_pledge.toLocaleString("de-DE") + " uzs" : "Данных нет"}</p>
         </div>
-        <div className="infoCol">
-          <h3 className="orange">
+        <div className='infoCol'>
+          <h3 className='orange'>
             Залог по карте
             <button
               style={{
@@ -372,7 +368,7 @@ const Dashboard = () => {
                 fontSize: "1.5rem",
                 cursor: "pointer",
                 marginLeft: "10px",
-                verticalAlign: "middle",  // Ensure the button aligns with the text
+                verticalAlign: "middle", // Ensure the button aligns with the text
               }}
               onClick={() => {
                 if (guaranteeCard) {
@@ -384,13 +380,11 @@ const Dashboard = () => {
                 }
               }}
             >
-              {guaranteeCard ? '☑️' : '◽️'}
+              {guaranteeCard ? "☑️" : "◽️"}
             </button>
           </h3>
           <p>{sumDashboard.card_pledge ? sumDashboard.card_pledge.toLocaleString("de-DE") + " uzs" : "Данных нет"}</p>
         </div>
-
-
 
         <div className='infoCol'>
           <h3 className='orange'>Общий долг</h3>
@@ -908,6 +902,8 @@ const Dashboard = () => {
                   required
                   name='statusBack'
                   id=''
+                  value={changeRentObj.isGuaranteeReturned}
+                  onChange={(e) => setChangeRentObj({ ...changeRentObj, isGuaranteeReturned: e.target.value })}
                 >
                   <option
                     value=''
