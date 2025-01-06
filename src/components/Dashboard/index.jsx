@@ -36,6 +36,7 @@ import axios from "axios";
 const STATUS = {
   // PLEDGE: "Дал залог",
   PAID: "Оплачено",
+  IN_PROCESS: "В Процессе",
   DUTY: "Долг",
 };
 
@@ -355,7 +356,7 @@ const Dashboard = () => {
                 }
               }}
             >
-              {guaranteeCash ? '◼️' : '◽️'}
+              {guaranteeCash ? '☑️' : '◽️'}
             </button>
           </h3>
           <p>{sumDashboard.cash_pledge ? sumDashboard.cash_pledge.toLocaleString("de-DE") + " uzs" : "Данных нет"}</p>
@@ -383,7 +384,7 @@ const Dashboard = () => {
                 }
               }}
             >
-              {guaranteeCard ? '◼️' : '◽️'}
+              {guaranteeCard ? '☑️' : '◽️'}
             </button>
           </h3>
           <p>{sumDashboard.card_pledge ? sumDashboard.card_pledge.toLocaleString("de-DE") + " uzs" : "Данных нет"}</p>
