@@ -137,7 +137,7 @@ const Dashboard = () => {
       startDate: new Date(formElements.startDate.value),
       endDate: new Date(formElements.endDate.value),
       guaranteeAmount: +formElements.guaranteeAmount.value,
-      isGuaranteeReturned: formElements.statusBack.value === "true",
+      isGuaranteeReturned: formElements.statusBack.value === true,
       guaranteeType: formElements.guaranteeType.value,
       amount: +formElements.amount.value,
       carId: +formElements.carId.value,
