@@ -137,7 +137,7 @@ const Dashboard = () => {
       startDate: new Date(formElements.startDate.value),
       endDate: new Date(formElements.endDate.value),
       guaranteeAmount: +formElements.guaranteeAmount.value,
-      isGuaranteeReturned: formElements.statusBack.value === true,
+      isGuaranteeReturned: formElements.statusBack.value === "true",
       guaranteeType: formElements.guaranteeType.value,
       amount: +formElements.amount.value,
       carId: +formElements.carId.value,
@@ -903,7 +903,12 @@ const Dashboard = () => {
                   name='statusBack'
                   id=''
                   value={changeRentObj.isGuaranteeReturned}
-                  onChange={(e) => setChangeRentObj({ ...changeRentObj, isGuaranteeReturned: e.target.value })}
+                  onChange={(e) =>
+                    setChangeRentObj({
+                      ...changeRentObj,
+                      isGuaranteeReturned: e.target.value === 'true' ? true : e.target.value === 'false' ? false : e.target.value,
+                    })
+                  }                  
                 >
                   <option
                     value=''
