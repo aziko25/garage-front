@@ -70,13 +70,18 @@ const Dashboard = () => {
 
   const [open, setOpen] = useState(false);
   const [isChangeRentModalOpen, setIsChangeRentModalOpen] = useState(false);
+  const [isExtendRentModalOpen, setIsExtendRentModalOpen] = useState(false);
   const [rentalsDeshboard, setRentalsDashboard] = useState([]);
   const [sumDashboard, setSumDashboard] = useState([]);
   const [rent, setRent] = useState([]);
   const [changeRentObj, setChangeRentObj] = useState([]);
+  const defaultExtendRentObj = { id: null, extendedDaysQuantity: 0 };
+  const [extendRentObj, setExtendRentObj] = useState(defaultExtendRentObj);
+  const [mode, setMode] = useState("create"); // "create" or "update"
   const [cars, setCars] = useState([]);
   const [activeCars, setActiveCars] = useState([]);
   const [filterRentalsDashboard, setFilterRentalsDashboard] = useState([]);
+  
 
   const daysBetween = (date1, date2) => {
     const ONE_DAY = 1000 * 60 * 60 * 24;
@@ -175,9 +180,56 @@ const Dashboard = () => {
     }
   };
 
+  const getRentExtensionById = async (id) => {
+    try {
+      const response = await axios.get(`${APP_ROUTES.URL}/rent/extend/byId/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          "ngrok-skip-browser-warning": "69420",
+        },
+      });
+      setExtendRentObj(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const changeRentShowInfo = async (id) => {
     setIsChangeRentModalOpen(true);
     getRentById(id);
+  };
+
+  const extendRentShowInfo = async (id) => {
+    setExtendRentObj((prev) => ({ ...prev, id }));
+    setMode("create");
+    setIsExtendRentModalOpen(true);
+  };
+
+  const changeExtendRentShowInfo = async (id) => {
+    setIsExtendRentModalOpen(true);
+    setMode("update");
+    getRentExtensionById(id);
+  };
+
+  const handleOpenExtendRentModal = (obj = null) => {
+    if (obj) {
+      setExtendRentObj(obj);
+      setMode("update");
+    } else {
+      setExtendRentObj(defaultExtendRentObj);
+      setMode("create");
+    }
+    setIsExtendRentModalOpen(true);
+  };
+  
+  const handleUpdateOrCreateRentExtensionSubmit = (e) => {
+    e.preventDefault();
+    console.log("Here we are", extendRentObj);
+    if (mode === "update") {
+      updateRentExtension(e);
+    } else {
+      extendRent(e);
+    }
   };
 
   const changeRent = async (e) => {
@@ -209,9 +261,64 @@ const Dashboard = () => {
     }
   };
 
+  const extendRent = async (e) => {
+      e.preventDefault();
+
+      console.log("extendRentObj:", extendRentObj); // Debugging: Check the id
+
+      const extendedRentObj = { ...extendRentObj };
+
+      try {
+        const response = await axios.post(`${APP_ROUTES.URL}/rent/extend/create/${extendedRentObj.id}`, extendedRentObj, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("@token")}`,
+          },
+        });
+        refreshData();
+        setIsExtendRentModalOpen(false);
+        setExtendRentObj(defaultExtendRentObj);
+      } catch (error) {
+        console.error(error);
+      }
+  };
+
+  const updateRentExtension = async (e) => {
+    e.preventDefault();
+
+    console.log("extendRentObj:", extendRentObj); // Debugging: Check the id
+
+    const extendedRentObj = { ...extendRentObj };
+
+    try {
+      const response = await axios.patch(`${APP_ROUTES.URL}/rent/extend/update/${extendedRentObj.id}`, extendedRentObj, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+        },
+      });
+      refreshData();
+      setIsExtendRentModalOpen(false);
+      setExtendRentObj(defaultExtendRentObj);
+    } catch (error) {
+      console.error(error);
+    }
+};
+
   const deleteRent = async (id) => {
     try {
       const response = await axios.delete(`${APP_ROUTES.URL}/rent/byId/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("@token")}`,
+        },
+      });
+      refreshData();
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deleteRentExtension = async (id) => {
+    try {
+      const response = await axios.delete(`${APP_ROUTES.URL}/rent/extension/delete/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("@token")}`,
         },
@@ -228,82 +335,189 @@ const Dashboard = () => {
 
   const handleClose = () => setOpen(false);
   const handleCloseChangeRentModal = () => setIsChangeRentModalOpen(false);
+  const handleCloseExtendRentModal = () => setIsExtendRentModalOpen(false);
+
+  const [expandedRows, setExpandedRows] = useState([]);
+
+  const toggleRow = (id) => {
+    setExpandedRows((prev) =>
+      prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+    );
+  };
 
   const renderTableRows = () => {
     const dataToRender = guaranteeCard || guaranteeCash ? filterRentalsDashboard : rent;
-
+  
     return (
       dataToRender &&
       dataToRender.map((item, index) => {
         const car = cars.find((car) => car.id === item?.carId) || {};
+        const isExpanded = expandedRows.includes(item.id);
+  
+        // Calculate total sums
+        const totalSum = item.amount + 
+          (item.Rent_Extensions
+            ? item.Rent_Extensions.reduce((sum, ext) => sum + ext.amount, 0)
+            : 0);
+  
+        const paidSum = item.amount * (item.status === "PAID") +
+          (item.Rent_Extensions
+            ? item.Rent_Extensions.reduce((sum, ext) => {
+                return sum + (ext.amount * (ext.status === "PAID"));
+              }, 0)
+            : 0);
+  
+            return (
+              <>
+                {/* Main Row */}
+                <div className="tableTr" key={item.id}>
+                  <div className="tableTd">
+                    {item.isRentExtended && (
+                      <button
+                        className="toggleButton"
+                        onClick={() => toggleRow(item.id)}
+                      >
+                        {isExpanded ? "▲" : "▼"}
+                      </button>
+                    )}
+                    <p>{item?.name}</p>
+                  </div>
+                  <div className="tableTd">
+                    <p>{`${car.model || ""} ${car.carNumber || ""}`}</p>
+                  </div>
+                  <div className="tableTd">
+                    <p>{totalSum.toLocaleString("de-DE")} uzs</p>
+                  </div>
+                  <div className="tableTd">
+                    <p>{paidSum.toLocaleString("de-DE")} uzs</p>
+                  </div>
+                  <div className="tableTd">
+                    <p>{PAYMENT_TYPE[item?.paymentType] || ""}</p>
+                  </div>
+                  <div className="tableTd">
+                    <p>
+                      {new Date(item.startDate).toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="tableTd">
+                    <p>
+                      {new Date(item.endDate).toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="tableTd">
+                    <div>{STATUSBACK[item.isGuaranteeReturned]}</div>
+                  </div>
+                  <div className="tableTd">
+                    <div className={`status ${item.status}`}>{STATUS[item.status]}</div>
+                  </div>
+                  <div className="tableTd">
+                    <button
+                      className="changeBtn"
+                      onClick={() => changeRentShowInfo(item.id)}
+                    >
+                      <VisibilityIcon />
+                    </button>
+                    <button
+                      className="deleteBtn"
+                      onClick={() => deleteRent(item.id)}
+                    >
+                      <DeleteOutlineIcon />
+                    </button>
+                    {item.isRentExtended && (
+                      <button
+                        className="extendBtn"
+                        onClick={() => extendRentShowInfo(item.id)}
+                      >
+                        <VisibilityIcon />
+                      </button>
+                    )}
+                  </div>
+                </div>
+            
+                {/* Extended Rows */}
+                {isExpanded &&
+                  item.Rent_Extensions &&
+                  item.Rent_Extensions.map((extension, extIndex) => (
+                    <div
+                      className="tableTr"
+                      key={`${item.id}-ext-${extIndex}`}
+                      style={{ backgroundColor: "#e8f5e9" }}
+                    >
+                      <div className="tableTd">
+                        <p>{item?.name}</p>
+                      </div>
+                      <div className="tableTd">
+                        <p>{`${car.model || ""} ${car.carNumber || ""}`}</p>
+                      </div>
+                      <div className="tableTd">
+                        <p>{extension.amount.toLocaleString("de-DE")} uzs</p>
+                      </div>
+                      <div className="tableTd">
+                        <p>
+                          {extension.status === "PAID"
+                            ? `${extension.amount.toLocaleString("de-DE")} uzs`
+                            : "0 uzs"}
+                        </p>
+                      </div>
+                      <div className="tableTd">
+                        <p>{PAYMENT_TYPE[extension.paymentType] || ""}</p>
+                      </div>
+                      <div className="tableTd">
+                        <p>{`Продление на ${extension.extendedDaysQuantity} дн.`}</p>
+                      </div>
+                      <div className="tableTd">
+                        <div>{"-"}</div>
+                      </div>
+                      <div className="tableTd">
+                        <div>{"-"}</div>
+                      </div>
+                      <div className="tableTd">
+                        <div className={`status ${extension.status}`}>
+                          {STATUS[extension.status]}
+                        </div>
+                      </div>
+                      <div className="tableTd">
 
-        return (
-          <div
-            className='tableTr'
-            key={index}
-          >
-            <div className='tableTd'>
-              <p>{item?.name}</p>
-            </div>
-            <div className='tableTd'>
-              <p>{`${car.model || ""} ${car.carNumber || ""}`}</p>
-            </div>
-            <div className='tableTd'>
-              <p>{item?.amount.toLocaleString("de-DE")} uzs</p>
-            </div>
-            <div className='tableTd'>
-              <p>{((item?.amount / 100) * item?.incomePersentage[1]).toLocaleString("de-DE")} uzs</p>
-            </div>
-            <div className='tableTd'>
-              <p>{PAYMENT_TYPE[item?.paymentType] || ""}</p>
-            </div>
-            <div className='tableTd'>
-              <p>
-                {new Date(item.startDate).toLocaleDateString("ru-RU", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                })}
-              </p>
-            </div>
-            <div className='tableTd'>
-              <p>
-                {new Date(item.endDate).toLocaleDateString("ru-RU", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                  hour: "numeric",
-                  minute: "numeric",
-                })}
-              </p>
-            </div>
-            <div className='tableTd'>
-              <div>{STATUSBACK[item.isGuaranteeReturned]}</div>
-            </div>
-            <div className='tableTd'>
-              <div className={`status ${item.status}`}>{STATUS[item.status]}</div>
-            </div>
-            <div className='tableTd'>
-              <button
-                className='changeBtn'
-                onClick={() => changeRentShowInfo(item.id)}
-              >
-                <VisibilityIcon />
-              </button>
-              <button
-                className='deleteBtn'
-                onClick={() => deleteRent(item.id)}
-              >
-                <DeleteOutlineIcon />
-              </button>
-            </div>
-          </div>
-        );
+                        <button
+                          className="changeBtn"
+                          onClick={() => changeExtendRentShowInfo(extension.id)}
+                        >
+                         
+                          <VisibilityIcon />
+                        </button>
+
+                        <button
+                          className="deleteBtn"
+                          onClick={() => deleteRentExtension(extension.id)}
+                        >
+                          <DeleteOutlineIcon />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </>
+            );
+            
       })
     );
   };
+  
+  
+  
+  
+
 
   const renderGeneralInfo = () => {
     return rentalsDeshboard || sumDashboard ? (
@@ -413,6 +627,132 @@ const Dashboard = () => {
 
   return (
     <>
+
+      <Dialog
+        maxWidth={"md"}
+        open={isExtendRentModalOpen}
+        onClose={handleCloseExtendRentModal}
+        fullScreen={fullScreen}
+      >
+        <div className='exitModal'>
+          <div className='exitModalWarningIcon'></div>
+          <form
+            action=''
+            onSubmit={handleUpdateOrCreateRentExtensionSubmit}
+          >
+            <div className='leftCreateRentModal'>
+              <div className='modalItem'>
+                <label htmlFor=''>Продлить Аренду *</label>
+                <input
+                  required
+                  type="number"
+                  min="0"
+                  placeholder="Количество дней"
+                  value={extendRentObj.extendedDaysQuantity || ''}
+                  onChange={(e) =>
+                    setExtendRentObj({
+                      ...extendRentObj,
+                      extendedDaysQuantity: parseInt(e.target.value, 10) || 0,
+                    })
+                  }
+                />
+              </div>  
+            </div>
+
+            <div className='rightCreateRentModal'>
+        
+              <div className='modalItem'>
+                <label htmlFor=''>Оплата *</label>
+                <input
+                  required
+                  name='amount'
+                  type='number'
+                  placeholder='Общая сумма (сум)'
+                  value={extendRentObj.amount}
+                  onChange={(e) =>
+                    setExtendRentObj({
+                      ...extendRentObj,
+                      amount: +e.target.value,
+                    })
+                  }
+                />
+                <select
+                  required
+                  name='paymentType'
+                  value={extendRentObj.paymentType}
+                  onChange={(e) =>
+                    setExtendRentObj({
+                      ...extendRentObj,
+                      paymentType: e.target.value,
+                    })
+                  }
+                >
+                  <option
+                    value=''
+                    hidden
+                  >
+                    Выберите тип оплаты
+                  </option>
+                  {Object.keys(PAYMENT_TYPE).map((key) => (
+                    <option
+                      key={key}
+                      value={key}
+                    >
+                      {PAYMENT_TYPE[key]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className='modalItem'>
+                <label htmlFor=''>Статус заявки *</label>
+                <select
+                  required
+                  name='status'
+                  id=''
+                  value={extendRentObj.status}
+                  onChange={(e) =>
+                    setExtendRentObj({
+                      ...extendRentObj,
+                      status: e.target.value,
+                    })
+                  }
+                >
+                  <option
+                    value=''
+                    hidden
+                  >
+                    Выберите статус заявки
+                  </option>
+                  {Object.keys(STATUS).map((key) => (
+                    <option
+                      key={key}
+                      value={key}
+                    >
+                      {STATUS[key]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className='modalItem'>
+                <div className='actionsModal'>
+                  <button
+                    type='button'
+                    onClick={() => handleClose(false)}
+                  >
+                    Отмена
+                  </button>
+                  <button type='submit'>Добавить</button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+      </Dialog>
+
+
+
       <Dialog
         maxWidth={"md"}
         open={open}
@@ -1020,10 +1360,14 @@ const Dashboard = () => {
                 <PriceChangeIcon />
                 <p>Общая сумма</p>
               </div>
-              <div className='tableThItem'>
+              {/*<div className='tableThItem'>
                 <BadgeIcon />
                 <p>Прибыль инвестора</p>
-              </div>
+              </div>*/}
+              {<div className='tableThItem'>
+                <PriceChangeIcon />
+                <p>Оплаченная сумма</p>
+              </div>}
               <div className='tableThItem'>
                 <CreditCardIcon />
                 <p>Способ Оплаты</p>
@@ -1040,10 +1384,11 @@ const Dashboard = () => {
                 <AssessmentOutlinedIcon />
                 <p>Статус залога</p>
               </div>
-              <div className='tableThItem'>
+              <div className='tableThItem' style={{ marginRight: "25px" }}>
                 <AssessmentOutlinedIcon />
                 <p>Статус</p>
               </div>
+                 
               <div className='tableThItem'>
                 <p>Действия</p>
               </div>
