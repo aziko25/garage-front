@@ -32,6 +32,8 @@ import Skeleton from "@mui/material/Skeleton";
 import "./index.sass";
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from "@mui/material";
 import axios from "axios";
+import AddIcon from '@mui/icons-material/Add';
+
 
 const STATUS = {
   // PLEDGE: "Дал залог",
@@ -435,14 +437,13 @@ const Dashboard = () => {
                     >
                       <DeleteOutlineIcon />
                     </button>
-                    {item.isRentExtended && (
-                      <button
-                        className="extendBtn"
-                        onClick={() => extendRentShowInfo(item.id)}
-                      >
-                        <VisibilityIcon />
-                      </button>
-                    )}
+
+                    <button
+                      className="changeBtn"
+                      onClick={() => extendRentShowInfo(item.id)}
+                    >
+                      <AddIcon />
+                    </button>
                   </div>
                 </div>
             
@@ -526,9 +527,13 @@ const Dashboard = () => {
           <h3 className='orange'>Кол. арендаторов за месяц</h3>
           <p>{rentalsDeshboard || "Данных нет"}</p>
         </div>
-        <div className='infoCol'>
-          <h3 className='green'>Месячный доход</h3>
-          <p>{sumDashboard.income ? sumDashboard.rentIncome.toLocaleString("de-DE") + " uzs" : "Данных нет"}</p>
+        <div className="infoCol">
+          <h3 className="green">Месячный доход</h3>
+          <p>
+            {sumDashboard.income || sumDashboard.rentIncome
+              ? ((sumDashboard.income || 0) + (sumDashboard.rentIncome || 0)).toLocaleString("de-DE") + " uzs"
+              : "Данных нет"}
+          </p>
         </div>
         <div className='infoCol'>
           <h3 className='red'>Месячный расход</h3>
