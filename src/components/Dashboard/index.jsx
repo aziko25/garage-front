@@ -476,11 +476,32 @@ const Dashboard = () => {
                         <p>{PAYMENT_TYPE[extension.paymentType] || ""}</p>
                       </div>
                       <div className="tableTd">
-                        <p>{`Продление на ${extension.extendedDaysQuantity} дн.`}</p>
+                        <p>
+                          {extension.startDate
+                            ? new Date(extension.startDate).toLocaleDateString("ru-RU", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "numeric",
+                              })
+                            : "-"}
+                        </p>
                       </div>
                       <div className="tableTd">
-                        <div>{"-"}</div>
+                        <p>
+                          {extension.endDate
+                            ? new Date(extension.endDate).toLocaleDateString("ru-RU", {
+                                day: "numeric",
+                                month: "long",
+                                year: "numeric",
+                                hour: "numeric",
+                                minute: "numeric",
+                              })
+                            : "-"}
+                        </p>
                       </div>
+
                       <div className="tableTd">
                         <div>{"-"}</div>
                       </div>
@@ -646,22 +667,45 @@ const Dashboard = () => {
             onSubmit={handleUpdateOrCreateRentExtensionSubmit}
           >
             <div className='leftCreateRentModal'>
-              <div className='modalItem'>
-                <label htmlFor=''>Продлить Аренду *</label>
-                <input
+            <div className='modalItem datePickers'>
+                <label htmlFor=''>Дата аренды *</label>
+                <LocalizationProvider
                   required
-                  type="number"
-                  min="0"
-                  placeholder="Количество дней"
-                  value={extendRentObj.extendedDaysQuantity || ''}
-                  onChange={(e) =>
-                    setExtendRentObj({
-                      ...extendRentObj,
-                      extendedDaysQuantity: parseInt(e.target.value, 10) || 0,
-                    })
-                  }
-                />
-              </div>  
+                  dateAdapter={AdapterDayjs}
+                >
+                  <DateTimePicker
+                    label='Дата и время начала аренды'
+                    className='datePicker'
+                    sx={{ marginBottom: "12px" }}
+                    name='startDate'
+                    ampm={false}
+                    timezone='Asia/Tashkent'
+                    required
+                    value={extendRentObj.startDate ? dayjs(extendRentObj.startDate) : null}
+                    onChange={(newValue) =>
+                      setExtendRentObj({
+                        ...extendRentObj,
+                        startDate: newValue ? newValue.toISOString() : null,
+                      })
+                    }
+                  />
+                  <DateTimePicker
+                    label='Дата и время окончания аренды'
+                    className='datePicker'
+                    name='endDate'
+                    ampm={false}
+                    timezone='Asia/Tashkent'
+                    required
+                    value={extendRentObj.endDate ? dayjs(extendRentObj.endDate) : null}
+                    onChange={(newValue) =>
+                      setExtendRentObj({
+                        ...extendRentObj,
+                        endDate: newValue ? newValue.toISOString() : null,
+                      })
+                    }
+                  />
+                </LocalizationProvider>
+              </div>
             </div>
 
             <div className='rightCreateRentModal'>
@@ -744,7 +788,7 @@ const Dashboard = () => {
                 <div className='actionsModal'>
                   <button
                     type='button'
-                    onClick={() => handleClose(false)}
+                    onClick={() => handleCloseExtendRentModal(false)}
                   >
                     Отмена
                   </button>
