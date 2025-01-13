@@ -674,7 +674,7 @@ const Dashboard = () => {
                   dateAdapter={AdapterDayjs}
                 >
                   <DateTimePicker
-                    label='Дата и время начала аренды'
+                    label='Начало аренды'
                     className='datePicker'
                     sx={{ marginBottom: "12px" }}
                     name='startDate'
@@ -690,7 +690,7 @@ const Dashboard = () => {
                     }
                   />
                   <DateTimePicker
-                    label='Дата и время окончания аренды'
+                    label='Окончания аренды'
                     className='datePicker'
                     name='endDate'
                     ampm={false}
