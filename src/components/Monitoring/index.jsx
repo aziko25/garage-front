@@ -188,7 +188,7 @@ const Monitoring = (props) => {
               timeZone: "UTC",
             })}
           </p>
-          {//role === "admin" && (
+          {role === "admin" && (
             <div className="dayStatsActions">
               <FontAwesomeIcon
                 icon={faTrash}
@@ -197,7 +197,7 @@ const Monitoring = (props) => {
                 title="Удалить"
               />
             </div>
-          }
+          )}
         </div>
       </div>
     );
