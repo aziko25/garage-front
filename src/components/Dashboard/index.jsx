@@ -431,12 +431,16 @@ const Dashboard = () => {
                     >
                       <VisibilityIcon />
                     </button>
+
+
+                    {role === "admin" && (
                     <button
                       className="deleteBtn"
                       onClick={() => deleteRent(item.id)}
                     >
                       <DeleteOutlineIcon />
                     </button>
+                    )}
 
                     <button
                       className="changeBtn"
@@ -520,12 +524,14 @@ const Dashboard = () => {
                           <VisibilityIcon />
                         </button>
 
+                        {role === "admin" && (
                         <button
                           className="deleteBtn"
                           onClick={() => deleteRentExtension(extension.id)}
                         >
                           <DeleteOutlineIcon />
                         </button>
+                        )}
                       </div>
                     </div>
                   ))}

@@ -188,14 +188,16 @@ const Monitoring = (props) => {
               timeZone: "UTC",
             })}
           </p>
-          <div className='dayStatsActions'>
-            <FontAwesomeIcon
-              icon={faTrash}
-              className='deleteIcon'
-              onClick={handleDeleteClick} // Обработчик клика
-              title='Удалить'
-            />
-          </div>
+          {//role === "admin" && (
+            <div className="dayStatsActions">
+              <FontAwesomeIcon
+                icon={faTrash}
+                className="deleteIcon"
+                onClick={handleDeleteClick}
+                title="Удалить"
+              />
+            </div>
+          }
         </div>
       </div>
     );
