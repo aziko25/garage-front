@@ -143,10 +143,12 @@ const Dashboard = () => {
       phoneNumber: formElements.phone.value,
       startDate: new Date(formElements.startDate.value),
       endDate: new Date(formElements.endDate.value),
+      initialEndData: new Date(formElements.endDate.value),
       guaranteeAmount: +formElements.guaranteeAmount.value,
       isGuaranteeReturned: formElements.statusBack.value === "true",
       guaranteeType: formElements.guaranteeType.value,
       amount: +formElements.amount.value,
+      amountPaid: +formElements.amountPaid.value,
       carId: +formElements.carId.value,
     };
 
@@ -361,13 +363,15 @@ const Dashboard = () => {
           (item.Rent_Extensions
             ? item.Rent_Extensions.reduce((sum, ext) => sum + ext.amount, 0)
             : 0);
-  
-        const paidSum = item.amount * (item.status === "PAID") +
+
+        const paidSum = 
+          (item.status === "PAID" ? item.amount : item.amountPaid) +
           (item.Rent_Extensions
             ? item.Rent_Extensions.reduce((sum, ext) => {
-                return sum + (ext.amount * (ext.status === "PAID"));
+                return sum + (ext.status === "PAID" ? ext.amount : ext.amountPaid);
               }, 0)
             : 0);
+
   
             return (
               <>
@@ -470,11 +474,12 @@ const Dashboard = () => {
                         <p>{extension.amount.toLocaleString("de-DE")} uzs</p>
                       </div>
                       <div className="tableTd">
-                        <p>
-                          {extension.status === "PAID"
-                            ? `${extension.amount.toLocaleString("de-DE")} uzs`
-                            : "0 uzs"}
-                        </p>
+                      <p>
+                        {extension.status === "PAID"
+                          ? `${extension.amount.toLocaleString("de-DE")} uzs`
+                          : `${extension.amountPaid.toLocaleString("de-DE")} uzs`}
+                      </p>
+
                       </div>
                       <div className="tableTd">
                         <p>{PAYMENT_TYPE[extension.paymentType] || ""}</p>
@@ -554,14 +559,32 @@ const Dashboard = () => {
           <h3 className='orange'>Кол. арендаторов за месяц</h3>
           <p>{rentalsDeshboard || "Данных нет"}</p>
         </div>
+        
+        
         <div className="infoCol">
           <h3 className="green">Месячный доход</h3>
           <p>
-            {sumDashboard.income || sumDashboard.rentIncome
-              ? ((sumDashboard.income || 0) + (sumDashboard.rentIncome || 0)).toLocaleString("de-DE") + " uzs"
+            Наличными:{" "}
+            {sumDashboard?.rentIncomeCash
+              ? sumDashboard.rentIncomeCash.toLocaleString("de-DE") + " uzs"
+              : "0"}
+          </p>
+          <p>
+            Картой:{" "}
+            {sumDashboard?.rentIncomeCard
+              ? sumDashboard.rentIncomeCard.toLocaleString("de-DE") + " uzs"
+              : "0"}
+          </p>
+          <p>
+            Общая сумма:{" "}
+            {sumDashboard?.rentIncome
+              ? sumDashboard.rentIncome.toLocaleString("de-DE") + " uzs"
               : "Данных нет"}
           </p>
         </div>
+
+
+
         <div className='infoCol'>
           <h3 className='red'>Месячный расход</h3>
           <p>{sumDashboard.outcome ? sumDashboard.outcome.toLocaleString("de-DE") + " uzs" : "Данных нет"}</p>
@@ -717,7 +740,7 @@ const Dashboard = () => {
             <div className='rightCreateRentModal'>
         
               <div className='modalItem'>
-                <label htmlFor=''>Оплата *</label>
+                <label htmlFor=''>К Оплате *</label>
                 <input
                   required
                   name='amount'
@@ -757,6 +780,49 @@ const Dashboard = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className='modalItem'>
+                <label htmlFor=''>Клиент заплатил *</label>
+                <input
+                  required
+                  name='amount'
+                  type='number'
+                  placeholder='Общая сумма (сум)'
+                  value={extendRentObj.amountPaid}
+                  onChange={(e) =>
+                    setExtendRentObj({
+                      ...extendRentObj,
+                      amountPaid: +e.target.value,
+                    })
+                  }
+                />
+                {/*<select
+                  required
+                  name='paymentType'
+                  value={extendRentObj.paymentType}
+                  onChange={(e) =>
+                    setExtendRentObj({
+                      ...extendRentObj,
+                      paymentType: e.target.value,
+                    })
+                  }
+                >
+                  <option
+                    value=''
+                    hidden
+                  >
+                    Выберите тип оплаты
+                  </option>
+                  {Object.keys(PAYMENT_TYPE).map((key) => (
+                    <option
+                      key={key}
+                      value={key}
+                    >
+                      {PAYMENT_TYPE[key]}
+                    </option>
+                  ))}
+                </select>*/}
               </div>
 
               <div className='modalItem'>
@@ -914,7 +980,7 @@ const Dashboard = () => {
               </div>
 
               <div className='modalItem'>
-                <label htmlFor=''>Оплата *</label>
+                <label htmlFor=''>К Оплате *</label>
                 <input
                   required
                   name='amount'
@@ -940,6 +1006,35 @@ const Dashboard = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className='modalItem'>
+                <label htmlFor=''>Клиент заплатил *</label>
+                <input
+                  required
+                  name='amountPaid'
+                  type='number'
+                  placeholder='Общая сумма (сум)'
+                />
+                {/*<select
+                  required
+                  name='paymentType'
+                >
+                  <option
+                    value=''
+                    hidden
+                  >
+                    Выберите тип оплаты
+                  </option>
+                  {Object.keys(PAYMENT_TYPE).map((key) => (
+                    <option
+                      key={key}
+                      value={key}
+                    >
+                      {PAYMENT_TYPE[key]}
+                    </option>
+                  ))}
+                </select>*/}
               </div>
 
               <div className='modalItem'>
@@ -1200,6 +1295,7 @@ const Dashboard = () => {
                       setChangeRentObj({
                         ...changeRentObj,
                         endDate: newValue ? newValue.toISOString() : null,
+                        initialEndData: newValue ? newValue.toISOString() : null,
                       })
                     }
                   />
@@ -1207,7 +1303,7 @@ const Dashboard = () => {
               </div>
 
               <div className='modalItem'>
-                <label htmlFor=''>Оплата *</label>
+                <label htmlFor=''>К Оплате *</label>
                 <input
                   required
                   type='number'
@@ -1247,6 +1343,49 @@ const Dashboard = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className='modalItem'>
+                <label htmlFor=''>Клиент заплатил *</label>
+                <input
+                  required
+                  type='number'
+                  placeholder='Общая сумма (сум)'
+                  value={changeRentObj.amountPaid}
+                  onChange={(e) =>
+                    setChangeRentObj({
+                      ...changeRentObj,
+                      amountPaid: +e.target.value,
+                    })
+                  }
+                />
+                {/*<select
+                  required
+                  name=''
+                  id=''
+                  value={changeRentObj.paymentType}
+                  onChange={(e) =>
+                    setChangeRentObj({
+                      ...changeRentObj,
+                      paymentType: e.target.value,
+                    })
+                  }
+                >
+                  <option
+                    value=''
+                    hidden
+                  >
+                    Выберите тип оплаты
+                  </option>
+                  {Object.keys(PAYMENT_TYPE).map((key) => (
+                    <option
+                      key={key}
+                      value={key}
+                    >
+                      {PAYMENT_TYPE[key]}
+                    </option>
+                  ))}
+                </select>*/}
               </div>
 
               <div className='modalItem'>
