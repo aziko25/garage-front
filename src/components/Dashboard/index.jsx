@@ -134,6 +134,7 @@ const Dashboard = () => {
     const data = {
       status: formElements.status.value,
       paymentType: formElements.paymentType.value,
+      amountPaidPaymentType: formElements.amountPaidPaymentType.value,
       incomePersentage: [
         +formElements.incomePerson.value,
         +formElements.incomeInvestor.value,
@@ -786,7 +787,7 @@ const Dashboard = () => {
                 <label htmlFor=''>Клиент заплатил *</label>
                 <input
                   required
-                  name='amount'
+                  name='amountPaid'
                   type='number'
                   placeholder='Общая сумма (сум)'
                   value={extendRentObj.amountPaid}
@@ -797,14 +798,14 @@ const Dashboard = () => {
                     })
                   }
                 />
-                {/*<select
+                {<select
                   required
-                  name='paymentType'
-                  value={extendRentObj.paymentType}
+                  name='amountPaidPaymentType'
+                  value={extendRentObj.amountPaidPaymentType}
                   onChange={(e) =>
                     setExtendRentObj({
                       ...extendRentObj,
-                      paymentType: e.target.value,
+                      amountPaidPaymentType: e.target.value,
                     })
                   }
                 >
@@ -822,7 +823,7 @@ const Dashboard = () => {
                       {PAYMENT_TYPE[key]}
                     </option>
                   ))}
-                </select>*/}
+                </select>}
               </div>
 
               <div className='modalItem'>
@@ -951,8 +952,8 @@ const Dashboard = () => {
                   min='0'
                 />
               </div>
-            </div>
-            <div className='rightCreateRentModal'>
+
+
               <div className='modalItem datePickers'>
                 <label htmlFor=''>Дата аренды *</label>
                 <LocalizationProvider
@@ -978,6 +979,33 @@ const Dashboard = () => {
                   />
                 </LocalizationProvider>
               </div>
+            </div>
+            <div className='rightCreateRentModal'>
+              {/*<div className='modalItem datePickers'>
+                <label htmlFor=''>Дата аренды *</label>
+                <LocalizationProvider
+                  required
+                  dateAdapter={AdapterDayjs}
+                >
+                  <DateTimePicker
+                    label='Дата и время начала аренды'
+                    className='datePicker'
+                    sx={{ marginBottom: "12px" }}
+                    name='startDate'
+                    ampm={false}
+                    required
+                    timezone='Asia/Tashkent'
+                  />
+                  <DateTimePicker
+                    label='Дата и время окончания аренды'
+                    className='datePicker'
+                    name='endDate'
+                    ampm={false}
+                    required
+                    timezone='Asia/Tashkent'
+                  />
+                </LocalizationProvider>
+              </div>*/}
 
               <div className='modalItem'>
                 <label htmlFor=''>К Оплате *</label>
@@ -1016,9 +1044,9 @@ const Dashboard = () => {
                   type='number'
                   placeholder='Общая сумма (сум)'
                 />
-                {/*<select
+                <select
                   required
-                  name='paymentType'
+                  name='amountPaidPaymentType'
                 >
                   <option
                     value=''
@@ -1034,7 +1062,7 @@ const Dashboard = () => {
                       {PAYMENT_TYPE[key]}
                     </option>
                   ))}
-                </select>*/}
+                </select>
               </div>
 
               <div className='modalItem'>
@@ -1259,8 +1287,8 @@ const Dashboard = () => {
                   Время аренды "{daysBetween(new Date(changeRentObj.startDate), new Date(changeRentObj.endDate))}" суток
                 </label>
               </div>
-            </div>
-            <div className='rightCreateRentModal'>
+
+
               <div className='modalItem datePickers'>
                 <label htmlFor=''>Дата аренды *</label>
                 <LocalizationProvider
@@ -1301,6 +1329,48 @@ const Dashboard = () => {
                   />
                 </LocalizationProvider>
               </div>
+            </div>
+            <div className='rightCreateRentModal'>
+              {/*<div className='modalItem datePickers'>
+                <label htmlFor=''>Дата аренды *</label>
+                <LocalizationProvider
+                  required
+                  dateAdapter={AdapterDayjs}
+                >
+                  <DateTimePicker
+                    label='Дата и время начала аренды'
+                    className='datePicker'
+                    sx={{ marginBottom: "12px" }}
+                    name='startDate'
+                    ampm={false}
+                    timezone='Asia/Tashkent'
+                    required
+                    value={changeRentObj.startDate ? dayjs(changeRentObj.startDate) : null}
+                    onChange={(newValue) =>
+                      setChangeRentObj({
+                        ...changeRentObj,
+                        startDate: newValue ? newValue.toISOString() : null,
+                      })
+                    }
+                  />
+                  <DateTimePicker
+                    label='Дата и время окончания аренды'
+                    className='datePicker'
+                    name='endDate'
+                    ampm={false}
+                    timezone='Asia/Tashkent'
+                    required
+                    value={changeRentObj.endDate ? dayjs(changeRentObj.endDate) : null}
+                    onChange={(newValue) =>
+                      setChangeRentObj({
+                        ...changeRentObj,
+                        endDate: newValue ? newValue.toISOString() : null,
+                        initialEndData: newValue ? newValue.toISOString() : null,
+                      })
+                    }
+                  />
+                </LocalizationProvider>
+              </div>*/}
 
               <div className='modalItem'>
                 <label htmlFor=''>К Оплате *</label>
@@ -1359,15 +1429,15 @@ const Dashboard = () => {
                     })
                   }
                 />
-                {/*<select
+                <select
                   required
                   name=''
                   id=''
-                  value={changeRentObj.paymentType}
+                  value={changeRentObj.amountPaidPaymentType}
                   onChange={(e) =>
                     setChangeRentObj({
                       ...changeRentObj,
-                      paymentType: e.target.value,
+                      amountPaidPaymentType: e.target.value,
                     })
                   }
                 >
@@ -1385,7 +1455,7 @@ const Dashboard = () => {
                       {PAYMENT_TYPE[key]}
                     </option>
                   ))}
-                </select>*/}
+                </select>
               </div>
 
               <div className='modalItem'>
