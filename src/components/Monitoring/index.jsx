@@ -106,6 +106,7 @@ const Monitoring = (props) => {
       owner: e.target.owner.value,
       comment: e.target.comment.value,
       amount: +e.target.amount.value,
+      paymentType: e.target.paymentType.value,
       createdAt: new Date(new Date().getTime() + 5 * 60 * 60 * 1000),
     };
 
@@ -394,6 +395,25 @@ const Monitoring = (props) => {
                   required
                   name='amount'
                 />
+                <select
+                  required
+                  name="paymentType"
+                >
+                  <option
+                    value=""
+                    hidden
+                  >
+                    Выберите тип оплаты
+                  </option>
+                  {Object.keys(PAYMENT_TYPE).map((key) => (
+                    <option
+                      key={key}
+                      value={key}
+                    >
+                      {PAYMENT_TYPE[key]}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className='modalItem'>
                 <label htmlFor=''>Владелец *</label>
@@ -461,14 +481,14 @@ const Monitoring = (props) => {
                   </div>
                   <div className='infoCol'>
                     <h3 className='green'>Другие доходы</h3>
-                    <p>Картой: {sum?.incomeCash?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
-                    <p>Наличкой: {sum?.incomeCard?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Картой: {sum?.incomeCard?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Наличкой: {sum?.incomeCash?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
                     <p>Общая сумма: {sum?.income?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
                   </div>
                   <div className='infoCol'>
                     <h3 className='red'>Потрачено за месяц</h3>
-                    <p>Картой: {sum?.outcomeCash?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
-                    <p>Наличкой: {sum?.outcomeCard?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Картой: {sum?.outcomeCard?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Наличкой: {sum?.outcomeCash?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
                     <p>Общая сумма: {sum?.outcome?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
                   </div>
                   <div className='infoCol'>
