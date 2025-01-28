@@ -75,11 +75,15 @@ const Monitoring = (props) => {
   }, []);
 
   const createIncome = useCallback(async (e) => {
+
+    console.log("Payment Type Element:", e.target.paymentType);
+    console.log("Payment Type Value:", e.target.paymentType.value);
     e.preventDefault();
     const data = {
       owner: e.target.owner.value,
       comment: e.target.comment.value,
       amount: +e.target.amount.value,
+      paymentType: e.target.paymentType.value,
       createdAt: new Date(new Date().getTime() + 5 * 60 * 60 * 1000),
     };
 
@@ -170,6 +174,11 @@ const Monitoring = (props) => {
       }
     };
 
+    const PAYMENT_TYPE = {
+      CASH: "Нал",
+      CARD: "Карта",
+    };
+
     return (
       <div className='dayStatsInfo'>
         <div className='dayStatsHeading'>
@@ -179,7 +188,7 @@ const Monitoring = (props) => {
         <div className='dayStatsPrice'>
           <h3>
             {item?.type === "outcome" ? "-" : "+"}
-            {item?.amount?.toLocaleString("de-DE") + " uzs"}
+            {item?.amount?.toLocaleString("de-DE") + " uzs "} {PAYMENT_TYPE[item?.paymentType]}
           </h3>
           <p>
             {new Date(item.createdAt).toLocaleTimeString("ru-RU", {
@@ -265,6 +274,11 @@ const Monitoring = (props) => {
     </div>
   );
 
+  const PAYMENT_TYPE = {
+    CASH: "Наличные",
+    CARD: "Карта",
+  };
+
   return (
     <>
       <Dialog
@@ -288,6 +302,26 @@ const Monitoring = (props) => {
                   required
                   name='amount'
                 />
+                <select
+                  required
+                  name="paymentType"
+                >
+                  <option
+                    value=""
+                    hidden
+                  >
+                    Выберите тип оплаты
+                  </option>
+                  {Object.keys(PAYMENT_TYPE).map((key) => (
+                    <option
+                      key={key}
+                      value={key}
+                    >
+                      {PAYMENT_TYPE[key]}
+                    </option>
+                  ))}
+                </select>
+
               </div>
               <div className='modalItem'>
                 <label htmlFor=''>Владелец *</label>
@@ -427,11 +461,15 @@ const Monitoring = (props) => {
                   </div>
                   <div className='infoCol'>
                     <h3 className='green'>Другие доходы</h3>
-                    <p>{sum?.income?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Картой: {sum?.incomeCash?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Наличкой: {sum?.incomeCard?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Общая сумма: {sum?.income?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
                   </div>
                   <div className='infoCol'>
                     <h3 className='red'>Потрачено за месяц</h3>
-                    <p>{sum?.outcome?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Картой: {sum?.outcomeCash?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Наличкой: {sum?.outcomeCard?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
+                    <p>Общая сумма: {sum?.outcome?.toLocaleString("de-DE") + " uzs" || "Данных нет"}</p>
                   </div>
                   <div className='infoCol'>
                     <h3 className='blue'>Заработано за месяц</h3>
